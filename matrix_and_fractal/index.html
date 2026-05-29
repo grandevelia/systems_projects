@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Mandlebrot Viewer</title>
+        <style>
+            body { font-family: sans-serif; text-align: center; background: #1a1a1a; color: #fff; }
+            canvas { border: 2px solid #444; background: #000; cursor: grab; }
+            canvas:active { cursor: grabbing; }
+            .controls { margin-top: 10px; color: #ccc; }
+            #fractalCanvas {
+                max-width: 100%; 
+                height: auto; 
+                overscroll-behavior: none;
+                touch-action: none;
+                -webkit-user-select: none;
+                user-select: none;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Mandlebrot Viewer</h1>
+        <canvas id="fractalCanvas" width="400" height="300" onwheel="event.preventDefault()"></canvas>
+        <div class="controls">
+            <p>Drag to Pan, Scroll to Zoom</p>
+        </div>
+        <br><br>
+        <script src="main.js"></script>
+        <script src="engine.js"></script>
+    </body>
+</html>
