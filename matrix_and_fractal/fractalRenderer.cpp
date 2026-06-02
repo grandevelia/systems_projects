@@ -1,5 +1,5 @@
-#include <complex>
 #include <cstdint>
+#include <vector>
 #include <emscripten/bind.h>
 #include "matrix.h"
 
@@ -31,27 +31,38 @@ uint32_t colorFromHSV(uint8_t val)
 class FractalRenderer{
 private:
     size_t n_max_iterations;
+    std::vector<uint32_t> palette;
     
 public:
     explicit FractalRenderer(size_t max_iters) : n_max_iterations(max_iters)
     {
+        palette.resize(n_max_iterations + 1);
+        for (size_t i = 0; i <= n_max_iterations; ++i)
+        {
+            palette[i] = colorFromHSV(static_cast<uint8_t>(i * 255 / n_max_iterations));
+        }
     }
     
-    int calcIters(std::complex<double> c) const
+    int calcIters(double cx, double cy) const
     {
-        std::complex<double> z(0.0, 0.0);
+        double zx {0.0};
+        double zy {0.0};
+        double zxSqr {0.0};
+        double zySqr {0.0};
+        
         int t {0};
-        constexpr double thresh {4.0};
-        while ((t < n_max_iterations) && (std::norm(z) < thresh))
+        double thresh {4.0};
+        
+        while ((t < n_max_iterations) && ((zxSqr + zySqr) <= thresh))
         {
-            z = z * z + c;
+            zy = 2.0 * zx * zy + cy;
+            zx = zxSqr - zySqr + cx;
+            
+            zxSqr = zx * zx;
+            zySqr = zy * zy;
             ++t;
         }
         return t;
-    }
-    
-    double mapRange(double x, double scale, double newLow) const {
-        return (x * scale) + newLow;
     }
     
     void render(Matrix<uint32_t>& output,
@@ -64,13 +75,12 @@ public:
         
         for (size_t i = 0; i < output.rows(); ++i)
         {
-            double newY{mapRange(static_cast<double>(i), yScale, min_im)};
+            double cy{static_cast<double>(i) * yScale + min_im};
+            double cx {min_re};
             for (size_t j = 0; j < output.cols(); ++j)
             {
-                double newX{mapRange(static_cast<double>(j), xScale, min_re)};
-                std::complex<double> c(newX, newY);
-                uint32_t iterVal {colorFromHSV(static_cast<uint8_t>(calcIters(c) * 255 / n_max_iterations))};
-                *dataAddress++ = iterVal;
+                *dataAddress++ = palette[calcIters(cx, cy)];
+                cx += xScale;
             }
         }
     }

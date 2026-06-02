@@ -35,8 +35,10 @@ function runEngine(){
 
 function setupInteractions(){
     const canvas = document.getElementById("fractalCanvas");
-    let isDragging = false;
-    let startX, startY;
+    let activePointers = [];
+    let lastPanX = 0;
+    let lastPanY = 0;
+    let lastPinchDist = 0;
     let renderPending = false;
     
     function requestRender() {
@@ -49,35 +51,97 @@ function setupInteractions(){
         }
     }
     
-    canvas.addEventListener('mousedown', e => {
-        isDragging = true;
-        startX = e.clientX;
-        startY = e.clientY;
+    function getDistance(a, b){
+        let xDist = b.clientX - a.clientX;
+        let yDist = b.clientY - a.clientY;
+        return Math.sqrt(xDist * xDist + yDist * yDist);
+    };
+    
+    function getMidpoint(a, b){
+        let xDist = b.clientX - a.clientX;
+        let yDist = b.clientY - a.clientY;
+        return {
+            x: xDist / 2,
+            y: yDist / 2
+        };
+    };
+    
+    canvas.addEventListener('pointerdown', e => {
+        canvas.setPointerCapture(e.pointerId);
+        activePointers.push(e);
+        
+        if (activePointers.length == 1){
+            lastPanX = activePointers[0].clientX;
+            lastPanY = activePointers[0].clientY;
+        } else if (activePointers.length == 2){
+            lastPinchDist = getDistance(activePointers[0], activePointers[1]);
+            const mp = getMidpoint(activePointers[0], activePointers[1]);
+            
+            lastPanX = mp.x;
+            lastPanY = mp.y;
+        }
     });
     
-    canvas.addEventListener('mousemove', (e) => {
-        if (!isDragging){
+    canvas.addEventListener('pointermove', (e) => {
+        const index = activePointers.findIndex(p => p.pointerId == e.pointerId);
+        if (index < 0){
             return;
         }
+        activePointers[index] = e;
+        let delX = 0;
+        let delY = 0;
+        let zoomFactor = 1.0;
+        const canvasBounds = canvas.getBoundingClientRect();
         
-        let delX = -(e.clientX - startX) * ((maxX - minX) / screenWidth);
-        let delY = -(e.clientY - startY) * ((maxY - minY) / screenHeight);
-        
-        minX += delX;
-        maxX += delX;
-        
-        minY += delY;
-        maxY += delY;
-        
-        startX = e.clientX;
-        startY = e.clientY;
+        if (activePointers.length == 1){
+            delX = -(e.clientX - lastPanX) * ((maxX - minX) / screenWidth);
+            delY = -(e.clientY - lastPanY) * ((maxY - minY) / screenHeight);
+            
+            minX += delX;
+            maxX += delX;
+            
+            minY += delY;
+            maxY += delY;
+            
+            lastPanX = e.clientX;
+            lastPanY = e.clientY;
+        } else {
+            const currentPinchDist = getDistance(activePointers[0], activePointers[1])
+            zoomFactor = lastPinchDist / currentPinchDist;
+            lastPinchDist = currentPinchDist;
+             
+            const mp = getMidpoint(activePointers[0], activePointers[1]);
+            
+            const mouseX = mp.x - canvasBounds.left;
+            const mouseY = mp.y - canvasBounds.top;
+            
+            // Midpoint position ito axis values in the rendering
+            const reX = minX + (mouseX * (maxX - minX) / screenWidth);
+            const imY = minY + (mouseY * (maxY - minY) / screenHeight);
+            
+            minX = reX + (minX - reX) * zoomFactor;
+            maxX = reX + (maxX - reX) * zoomFactor;
+            minY = imY + (minY - imY) * zoomFactor;
+            maxY = imY + (maxY - imY) * zoomFactor;
+        }
         
         requestRender();
     });
     
-    window.addEventListener('mouseup', () => {
-        isDragging = false;
-    });
+    const handlePointerUp = e => {
+        activePointers = activePointers.filter(p => p.pointerId != e.pointerId);
+        if (activePointers.length < 2){
+            lastPinchDist = 0;
+        }
+        if (activePointers.length == 1){
+            lastPanX = activePointers[0].clientX;
+            lastPanY = activePointers[0].clientY;
+        }
+    };
+    
+    canvas.addEventListener('pointerup', handlePointerUp);
+    canvas.addEventListener('pointercancel', handlePointerUp);
+    
     
     canvas.addEventListener('wheel', (e) => {
         e.preventDefault();
@@ -86,9 +150,9 @@ function setupInteractions(){
         const scrollAmt = e.deltaY;
         const zoomFactor = scrollAmt > 0 ? 1.15 : 0.85;
         
-        const canvasDounds = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - canvasDounds.left;
-        const mouseY = e.clientY - canvasDounds.top;
+        const canvasBounds = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - canvasBounds.left;
+        const mouseY = e.clientY - canvasBounds.top;
         
         // Mouse position ito axis values in the rendering
         const reX = minX + (mouseX * (maxX - minX) / screenWidth);
@@ -101,4 +165,5 @@ function setupInteractions(){
         
         requestRender();
     }, { passive: false });
+    
 }
