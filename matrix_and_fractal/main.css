@@ -1,0 +1,196 @@
+:root {
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --text-color: #e0e0e0;
+    --accent-color: #4fc3f7;
+    --border-color: #333;
+}
+
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+    background: var(--bg-color); 
+    color: var(--text-color); 
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+h1 {
+    margin-top: 0;
+    font-size: 2rem;
+    text-align: center;
+}
+
+/* Responsive layout container for the canvas and labels */
+.viewer-container {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto 1fr auto;
+    gap: 8px;
+    align-items: center;
+    justify-items: center;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+/* Canvas Wrapper maintains aspect ratio and scales */
+.canvas-wrapper {
+    grid-column: 2;
+    grid-row: 2;
+    width: 100%;
+    position: relative;
+    aspect-ratio: 400 / 300;
+}
+
+canvas { 
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--border-color); 
+    background: #000; 
+    cursor: grab; 
+    border-radius: 4px;
+    touch-action: none;
+    overscroll-behavior: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+canvas:active { cursor: grabbing; }
+
+/* Boundary Label Styles */
+.label {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: #aaa;
+    white-space: nowrap;
+}
+.label.top    { grid-column: 2; grid-row: 1; }
+.label.bottom { grid-column: 2; grid-row: 3; }
+.label.left   { grid-column: 1; grid-row: 2; transform: rotate(-90deg); }
+.label.right  { grid-column: 3; grid-row: 2; transform: rotate(90deg); }
+
+.controls { 
+    margin: 15px 0; 
+    color: #aaa; 
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* Content and About Section Styles */
+.content-area {
+    width: 100%;
+    max-width: 500px;
+    text-align: left;
+    line-height: 1.6;
+    margin-top: 20px;
+}
+
+#about-area {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+#about-area h2 {
+    margin-top: 0;
+    font-size: 1.3rem;
+    color: var(--accent-color);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 5px;
+}
+
+#about-area h3 {
+    font-size: 1rem;
+    margin-bottom: 5px;
+    color: #fff;
+}
+
+#about-area a {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+#about-area a:hover {
+    text-decoration: underline;
+}
+
+.iteration-control {
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: sans-serif;
+}
+
+.iteration-control input {
+    background: #2a2a2a;
+    border: 1px solid var(--border-color);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 4px;
+    width: 70px;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.iteration-control input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+.scale-container {
+    width: 100%;
+    max-width: 400px; /* Matches canvas width */
+    margin: 10px auto 0 auto;
+    background: #1e1e1e;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #333;
+    box-sizing: border-box;
+}
+
+.zoom-stats {
+    display: flex;
+    justify-content: space-between;
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: #4fc3f7;
+    margin-bottom: 8px;
+}
+
+.scale-ruler-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+/* Creates a classic mapping scale bar with ticked ends */
+.scale-ruler {
+    width: 50%; /* Represents exactly half the canvas width */
+    height: 6px;
+    border: 2px solid #aaa;
+    border-top: none; /* Leaves ticks on the left and right */
+    box-sizing: border-box;
+}
+
+.scale-label {
+    font-family: monospace;
+    font-size: 0.8rem;
+    color: #aaa;
+    margin-top: 4px;
+}

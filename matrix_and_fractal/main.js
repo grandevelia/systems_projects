@@ -1,6 +1,6 @@
 const screenWidth = 400;
 const screenHeight = 300;
-const nMaxIterations = 75;
+let nMaxIterations = 80;
 
 let minX = -2.0;
 let maxX = 1.0;
@@ -13,15 +13,37 @@ let globalRenderer = null;
 window.Module = {
     onRuntimeInitialized: function() {
         globalMatrix = new Module.Matrix(screenHeight, screenWidth);
-        globalRenderer = new Module.FractalRenderer(screenWidth);
+        globalRenderer = new Module.FractalRenderer(nMaxIterations);
         
         runEngine(); 
         setupInteractions();
     }
 };
 
+function updateLabels() {
+    document.getElementById("label-left").textContent = Number(minX).toExponential(4);
+    document.getElementById("label-right").textContent = Number(maxX).toExponential(4);
+    document.getElementById("label-top").textContent = Number(minY).toExponential(4) + "i";
+    document.getElementById("label-bottom").textContent = Number(maxY).toExponential(4) + "i";
+
+    const currentWidth = maxX - minX;
+    document.getElementById("coord-width").textContent = "Width: " + currentWidth.toExponential(4);
+
+    const baseWidth = 3.0;
+    const zoomMultiplier = baseWidth / currentWidth;
+    
+    if (zoomMultiplier < 10000) {
+        document.getElementById("zoom-multiplier").textContent = "Zoom: " + Math.round(zoomMultiplier).toLocaleString() + "x";
+    } else {
+        document.getElementById("zoom-multiplier").textContent = "Zoom: " + zoomMultiplier.toExponential(2) + "x";
+    }
+    
+    const rulerWidthValue = currentWidth / 2;
+    document.getElementById("scale-text").textContent = rulerWidthValue.toExponential(3) + " units";
+}
+
 function runEngine(){
-    globalRenderer.render(globalMatrix, minX, maxX, minY, maxY);
+    globalRenderer.render(globalMatrix, minX, maxX, minY, maxY, nMaxIterations);
     
     const ptr = globalMatrix.data();
     const pixelBuffer = new Uint8ClampedArray(Module.HEAPU8.buffer, ptr, screenWidth * screenHeight * 4);
@@ -31,10 +53,13 @@ function runEngine(){
     const ctx = canvas.getContext("2d");
     
     ctx.putImageData(imageData, 0, 0);
+    updateLabels();
 }
 
 function setupInteractions(){
     const canvas = document.getElementById("fractalCanvas");
+    const iterInput = document.getElementById("iterations-input");
+
     let activePointers = [];
     let lastPanX = 0;
     let lastPanY = 0;
@@ -51,6 +76,23 @@ function setupInteractions(){
         }
     }
     
+    if (iterInput) {
+        iterInput.addEventListener('input', (e) => {
+            let val = parseInt(e.target.value, 10);
+            if (isNaN(val) || val < 1) val = 10; 
+            
+            nMaxIterations = val;
+            
+            if (globalRenderer && typeof globalRenderer.setMaxIterations === 'function') {
+                globalRenderer.setMaxIterations(nMaxIterations);
+            } else if (globalRenderer && typeof globalRenderer.set_max_iterations === 'function') {
+                globalRenderer.set_max_iterations(nMaxIterations);
+            }
+            
+            requestRender();
+        });
+    }
+
     function getDistance(a, b){
         let xDist = b.clientX - a.clientX;
         let yDist = b.clientY - a.clientY;

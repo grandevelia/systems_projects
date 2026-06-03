@@ -43,6 +43,16 @@ public:
         }
     }
     
+    void setMaxIterations(size_t max_iters)
+    {
+        n_max_iterations = max_iters;
+        palette.resize(n_max_iterations + 1);
+        for (size_t i = 0; i <= n_max_iterations; ++i)
+        {
+            palette[i] = colorFromHSV(static_cast<uint8_t>(i * 255 / n_max_iterations));
+        }
+    }
+
     int calcIters(double cx, double cy) const
     {
         double zx {0.0};
@@ -98,7 +108,8 @@ EMSCRIPTEN_BINDINGS(fractal_engine) {
     
     emscripten::class_<FractalRenderer>("FractalRenderer")
         .constructor<size_t>()
-        .function("render", &FractalRenderer::render);
+        .function("render", &FractalRenderer::render)
+        .function("setMaxIterations", &FractalRenderer::setMaxIterations);
 }
 
 int main() {

@@ -2,28 +2,81 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>Mandlebrot Viewer</title>
-        <style>
-            body { font-family: sans-serif; text-align: center; background: #ffffff; color: #fff; }
-            canvas { border: 2px solid #444; background: #000; cursor: grab; }
-            canvas:active { cursor: grabbing; }
-            .controls { margin-top: 10px; color: #ccc; }
-            #fractalCanvas {
-                max-width: 100%; 
-                height: auto; 
-                overscroll-behavior: none;
-                touch-action: none;
-                -webkit-user-select: none;
-                user-select: none;
-            }
-        </style>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Mandelbrot Viewer</title>
+        <link rel="stylesheet" href="main.css" />
     </head>
     <body>
-        <h1>Mandlebrot Viewer</h1>
-        <canvas id="fractalCanvas" width="400" height="300" onwheel="event.preventDefault()"></canvas>
-        <div class="controls">
-            <p>Drag to Pan, Scroll to Zoom</p>
+        <h1>Mandelbrot Viewer</h1>
+        
+        <div class="viewer-container">
+            <div class="label bottom" id="label-bottom">-1.5000i</div>
+            <div class="label left" id="label-left">-2.0000</div>
+            
+            <div class="canvas-wrapper">
+                <canvas id="fractalCanvas" width="400" height="300"></canvas>
+            </div>
+
+            
+            <div class="label right" id="label-right">1.0000</div>
+            <div class="label top" id="label-top">1.5000i</div>
         </div>
+
+        <div class="scale-container">
+            <div class="zoom-stats">
+                <span id="zoom-multiplier">Zoom: 1x</span>
+                <span id="coord-width">Width: 3.0000</span>
+            </div>
+            <div class="scale-ruler-wrapper">
+                <div class="scale-ruler"></div>
+                <div class="scale-label" id="scale-text">3.0 units</div>
+            </div>
+        </div>
+        
+
+        <div class="controls">
+            <p>Drag / Swipe to Pan &bull; Scroll / Pinch to Zoom</p>
+            <div class="iteration-control">
+                <label for="iterations-input">Max Iterations: </label>
+                <input 
+                    type="number" 
+                    id="iterations-input" 
+                    min="10" 
+                    max="2000" 
+                    step="5" 
+                    value="80"
+                >
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div id="about-area">
+                <h2>About</h2>
+                <p>
+                    This application uses WebAssembly (WASM) to render the Mandelbrot Set in real-time.
+                </p>
+                
+                <h3>Notes</h3>
+                <ul>
+                    <li>
+                        The maximum number of iterations used in the color calculation starts at 75. Zooming in using this threshold will stop resolving new features fairly quickly.
+                    </li>
+                    <li>
+                        Increasing the max iterations after zooming in can show incredible new details.
+                    </li>
+                    <li>
+                       This visualization will break near zooms of 1x10^13x. The cpp code uses doubles to calculate the set values, and hits the precision limit of doubles around this point.
+                    </li>
+                    <li>
+                        This app may be updated at some point in the future to use an infinite-precision library like Boost at deeper zooms.
+                    </li>
+                </ul>
+                
+                <h3>Code is available on <a href="https://github.com/grandevelia/systems_projects/tree/main/matrix_and_fractal" target="_blank" rel="noopener noreferrer">GitHub</a>
+                </h3>
+            </div>
+        </div>
+        
         <br><br>
         <script src="main.js"></script>
         <script src="engine.js"></script>
