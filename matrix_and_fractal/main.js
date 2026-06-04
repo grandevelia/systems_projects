@@ -77,11 +77,16 @@ function setupInteractions(){
     }
     
     if (iterInput) {
+        const iterValLabel = document.getElementById("iter-val");
+        
         iterInput.addEventListener('input', (e) => {
-            let val = parseInt(e.target.value, 10);
-            if (isNaN(val) || val < 1) val = 10; 
-            
+            const val = parseInt(e.target.value, 10);
             nMaxIterations = val;
+            
+            if (iterValLabel) {
+                iterValLabel.textContent = val;
+            }
+            
             
             if (globalRenderer && typeof globalRenderer.setMaxIterations === 'function') {
                 globalRenderer.setMaxIterations(nMaxIterations);
@@ -100,8 +105,8 @@ function setupInteractions(){
     };
     
     function getMidpoint(a, b){
-        let xDist = b.clientX - a.clientX;
-        let yDist = b.clientY - a.clientY;
+        let xDist = b.clientX + a.clientX;
+        let yDist = b.clientY + a.clientY;
         return {
             x: xDist / 2,
             y: yDist / 2
@@ -109,7 +114,14 @@ function setupInteractions(){
     };
     
     canvas.addEventListener('pointerdown', e => {
-        canvas.setPointerCapture(e.pointerId);
+        try {
+            if (canvas.setPointerCapture) {
+                canvas.setPointerCapture(e.pointerId);
+            }
+        } catch (err) {
+        }
+        
+        activePointers = activePointers.filter(p => p.pointerId !== e.pointerId);
         activePointers.push(e);
         
         if (activePointers.length == 1){
@@ -119,8 +131,8 @@ function setupInteractions(){
             lastPinchDist = getDistance(activePointers[0], activePointers[1]);
             const mp = getMidpoint(activePointers[0], activePointers[1]);
             
-            lastPanX = mp.x;
-            lastPanY = mp.y;
+            lastPanX = mp.clientX;
+            lastPanY = mp.clientY;
         }
     });
     
@@ -148,14 +160,18 @@ function setupInteractions(){
             lastPanX = e.clientX;
             lastPanY = e.clientY;
         } else {
-            const currentPinchDist = getDistance(activePointers[0], activePointers[1])
+            const currentPinchDist = getDistance(activePointers[0], activePointers[1]);
+            if (lastPinchDist === 0) lastPinchDist = currentPinchDist;
             zoomFactor = lastPinchDist / currentPinchDist;
             lastPinchDist = currentPinchDist;
              
             const mp = getMidpoint(activePointers[0], activePointers[1]);
             
-            const mouseX = mp.x - canvasBounds.left;
-            const mouseY = mp.y - canvasBounds.top;
+            const scaleX = screenWidth / canvasBounds.width;
+            const scaleY = screenHeight / canvasBounds.height;
+
+            const mouseX = (mp.x - canvasBounds.left) * scaleX;
+            const mouseY = (mp.y - canvasBounds.top) * scaleY;
             
             // Midpoint position ito axis values in the rendering
             const reX = minX + (mouseX * (maxX - minX) / screenWidth);
@@ -171,6 +187,12 @@ function setupInteractions(){
     });
     
     const handlePointerUp = e => {
+        try {
+            if (canvas.releasePointerCapture) {
+                canvas.releasePointerCapture(e.pointerId);
+            }
+        } catch (err) {}
+
         activePointers = activePointers.filter(p => p.pointerId != e.pointerId);
         if (activePointers.length < 2){
             lastPinchDist = 0;

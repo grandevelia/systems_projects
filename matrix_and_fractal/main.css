@@ -11,7 +11,7 @@ body {
     background: var(--bg-color); 
     color: var(--text-color); 
     margin: 0;
-    padding: 20px;
+    padding: 10px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -65,6 +65,7 @@ canvas {
     overscroll-behavior: none;
     -webkit-user-select: none;
     user-select: none;
+    pointer-events: auto;
 }
 
 canvas:active { cursor: grabbing; }
@@ -75,6 +76,7 @@ canvas:active { cursor: grabbing; }
     font-size: 0.8rem;
     color: #aaa;
     white-space: nowrap;
+    pointer-events: none;
 }
 .label.top    { grid-column: 2; grid-row: 1; }
 .label.bottom { grid-column: 2; grid-row: 3; }
@@ -128,28 +130,57 @@ canvas:active { cursor: grabbing; }
 }
 
 .iteration-control {
-    margin-top: 15px;
+    margin-top: 12px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    font-family: sans-serif;
+    gap: 8px;
+    width: 100%;
 }
 
-.iteration-control input {
-    background: #2a2a2a;
-    border: 1px solid var(--border-color);
+.iteration-control label {
+    font-family: monospace;
+    font-size: 0.9rem;
     color: #fff;
-    padding: 6px 10px;
-    border-radius: 4px;
-    width: 70px;
-    font-size: 1rem;
-    text-align: center;
 }
 
-.iteration-control input:focus {
+#iter-val {
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+.iteration-control input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 80%;
+    max-width: 300px;
+    height: 8px;
+    background: #2a2a2a;
+    border-radius: 4px;
     outline: none;
-    border-color: var(--accent-color);
+    border: 1px solid var(--border-color);
+}
+
+.iteration-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+.iteration-control input[type="range"]::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
 }
 
 .scale-container {
@@ -193,4 +224,36 @@ canvas:active { cursor: grabbing; }
     font-size: 0.8rem;
     color: #aaa;
     margin-top: 4px;
+}
+
+@media (max-width: 600px) {
+    body {
+        padding: 8px;
+    }
+
+    /* Change the container layout into a tight vertical stack */
+    .viewer-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto 1fr auto auto;
+        gap: 4px;
+        padding: 8px; /* Extra thin padding gives maximum width to canvas */
+    }
+
+    /* Force the canvas wrapper to grab full container width */
+    .canvas-wrapper {
+        grid-column: 1;
+        grid-row: 3;
+        width: 100%;
+    }
+
+    /* Re-stack the labels sequentially from top to bottom so they don't crowd the sides */
+    .label.top    { grid-column: 1; grid-row: 1; }
+    .label.left   { grid-column: 1; grid-row: 2; transform: none; }
+    .label.right  { grid-column: 1; grid-row: 4; transform: none; }
+    .label.bottom { grid-column: 1; grid-row: 5; }
+
+    .label {
+        font-size: 0.75rem;
+        margin: 2px 0;
+    }
 }

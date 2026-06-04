@@ -37,12 +37,12 @@
         <div class="controls">
             <p>Drag / Swipe to Pan &bull; Scroll / Pinch to Zoom</p>
             <div class="iteration-control">
-                <label for="iterations-input">Max Iterations: </label>
+                <label for="iterations-input">Max Iterations: <span id="iter-val">80</span></label>
                 <input 
-                    type="number" 
+                    type="range" 
                     id="iterations-input" 
                     min="10" 
-                    max="2000" 
+                    max="1000" 
                     step="5" 
                     value="80"
                 >
